@@ -378,6 +378,35 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
 
 /* hint when no station selected */
 .map-hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(7,15,28,0.9);border:1px solid var(--b);border-radius:var(--r);padding:8px 16px;font-size:12px;color:var(--m2);pointer-events:none;z-index:20;backdrop-filter:blur(8px);white-space:nowrap}
+
+/* ══ TOAST, LOADER, AUTH ═════════════════════════════════ */
+.toast-wrap{position:fixed;top:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:9999;pointer-events:none}
+.toast{padding:12px 16px;border-radius:var(--r);font-size:13px;font-family:var(--fn);background:var(--card2);border:1px solid var(--b2);color:var(--t);min-width:260px;max-width:360px;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:tslide .25s ease-out;pointer-events:auto}
+.toast.err{border-color:rgba(255,107,107,.35);color:var(--red)}
+.toast.ok{border-color:rgba(0,240,130,.35);color:var(--green)}
+.toast.info{border-color:rgba(77,168,255,.25)}
+@keyframes tslide{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.full-loader{position:fixed;inset:0;display:flex;justify-content:center;align-items:center;background:rgba(3,8,15,.6);backdrop-filter:blur(6px);z-index:9000}
+.spinner{width:42px;height:42px;border:3px solid var(--b);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite}
+.loader-inline{display:inline-block;width:14px;height:14px;border:2px solid var(--b);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.auth-zone{display:flex;align-items:center;gap:8px}
+.nav-auth-btn{padding:6px 14px;background:var(--green);border:none;border-radius:8px;font-family:var(--fn);font-size:12px;font-weight:600;color:#03080F;cursor:pointer;transition:.2s}
+.nav-auth-btn:hover{box-shadow:0 0 16px var(--glow)}
+.nav-auth-btn.secondary{background:transparent;border:1px solid var(--b2);color:var(--m3)}
+.nav-auth-btn.secondary:hover{color:var(--green);border-color:var(--green);box-shadow:none}
+.user-chip{display:flex;align-items:center;gap:8px;padding:4px 6px 4px 12px;background:var(--card);border:1px solid var(--b);border-radius:20px;font-size:12px;color:var(--t)}
+.user-chip .avatar{width:26px;height:26px;font-size:11px}
+.auth-field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.auth-field label{font-size:11px;color:var(--m2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px}
+.auth-field input{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:10px 12px;color:var(--t);font-family:var(--fn);font-size:14px;outline:none;transition:.15s}
+.auth-field input:focus{border-color:rgba(0,240,130,.4)}
+.auth-switch{margin-top:14px;font-size:12px;color:var(--m2);text-align:center}
+.auth-switch a{color:var(--green);cursor:pointer;text-decoration:underline}
+.empty-state{padding:30px;text-align:center;color:var(--m2);font-size:13px}
+.err-banner{margin:10px 16px;padding:10px 14px;background:var(--rd);border:1px solid rgba(255,107,107,.3);border-radius:var(--r);font-size:12px;color:var(--red);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.err-banner button{background:transparent;border:1px solid rgba(255,107,107,.4);color:var(--red);padding:3px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:var(--fn)}
+.list-loading{padding:30px;display:flex;justify-content:center;align-items:center;gap:10px;color:var(--m2);font-size:12px}
 </style>
 </head>
 <body>
@@ -418,9 +447,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
       <div class="ntab" onclick="goTo('driver-screen')">App Conductor</div>
     </div>
     <div class="nav-right">
-      <div class="live-pill"><div class="live-dot"></div>En vivo</div>
+      <div class="live-pill" id="livePillMap"><div class="live-dot"></div><span>Conectando…</span></div>
       <div class="clock" id="clock">--:--:--</div>
-      <div class="avatar">AL</div>
+      <div class="auth-zone" id="authZone1"></div>
     </div>
   </div>
   <div class="map-layout">
@@ -492,9 +521,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
       <div class="ntab" onclick="goTo('driver-screen')">App Conductor</div>
     </div>
     <div class="nav-right">
-      <div class="live-pill"><div class="live-dot"></div>5 estaciones online</div>
+      <div class="live-pill" id="livePillOp"><div class="live-dot"></div><span>Conectando…</span></div>
       <div class="clock" id="clock2">--:--:--</div>
-      <div class="avatar">AL</div>
+      <div class="auth-zone" id="authZone2"></div>
     </div>
   </div>
   <div class="op-content">
@@ -585,8 +614,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
       <div class="ntab on">App Conductor</div>
     </div>
     <div class="nav-right">
-      <div class="live-pill"><div class="live-dot"></div>En vivo</div>
-      <div class="avatar">AL</div>
+      <div class="live-pill" id="livePillDr"><div class="live-dot"></div><span>Conectando…</span></div>
+      <div class="auth-zone" id="authZone3"></div>
     </div>
   </div>
   <div style="flex:1;display:flex;justify-content:center;align-items:center;padding:20px;overflow:auto">
@@ -616,59 +645,307 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t);font-f
   </div>
 </div>
 
+<!-- ══ AUTH MODAL ═════════════════════════════════════════ -->
+<div id="authModal" style="display:none">
+  <div class="modal-backdrop" onclick="if(event.target===this)closeAuth()">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="modal-title" id="authTitle">Iniciar sesión</span>
+        <button class="modal-close" onclick="closeAuth()">×</button>
+      </div>
+      <div class="modal-body" id="authBody"></div>
+      <div class="modal-foot" id="authFoot"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOASTS & LOADER ════════════════════════════════════ -->
+<div class="toast-wrap" id="toastWrap"></div>
+<div class="full-loader" id="fullLoader" style="display:none"><div class="spinner"></div></div>
+
 <script>
 // ══════════════════════════════════════════════════════════
-// BACKEND EMBEBIDO — Lógica completa en memoria
+// KargaYa frontend — conectado a la API real (pendiente 1)
 // ══════════════════════════════════════════════════════════
-const STATIONS=[
-  {id:'st1',name:'El Tesoro Parque Comercial',addr:'Cra. 25A #1A-Sur-45',hood:'El Poblado',x:70,y:26,base:1200,occ:.75,rating:4.7,
-   slots:[{id:'a1',t:'CCS2',kw:50,s:'charging',bat:67,mins:22},{id:'a2',t:'CCS2',kw:50,s:'charging',bat:45,mins:35},{id:'a3',t:'Type2',kw:22,s:'available'},{id:'a4',t:'Type2',kw:22,s:'reserved',reservedFor:'15:30'}]},
-  {id:'st2',name:'C.C. Santa Fe Medellín',addr:'Cra 48 Nro 16 Sur-44',hood:'Itagüi',x:36,y:70,base:1100,occ:.30,rating:4.5,
-   slots:[{id:'b1',t:'CCS2',kw:50,s:'available'},{id:'b2',t:'CCS2',kw:50,s:'available'},{id:'b3',t:'Type2',kw:22,s:'charging',bat:38,mins:41},{id:'b4',t:'Type2',kw:22,s:'available'},{id:'b5',t:'Type2',kw:22,s:'available'}]},
-  {id:'st3',name:'EPM Edificio Inteligente',addr:'Av. Carabobo, La Alpujarra',hood:'Centro',x:49,y:48,base:1200,occ:.85,rating:4.3,
-   slots:[{id:'c1',t:'CCS2',kw:150,s:'charging',bat:82,mins:8},{id:'c2',t:'CCS2',kw:150,s:'charging',bat:45,mins:17},{id:'c3',t:'CCS2',kw:150,s:'charging',bat:23,mins:31}]},
-  {id:'st4',name:'Oviedo Medellín',addr:'Cra. 43A Nro 6 Sur-15',hood:'El Poblado',x:64,y:46,base:1250,occ:.75,rating:4.6,
-   slots:[{id:'d1',t:'CCS2',kw:50,s:'charging',bat:55,mins:28},{id:'d2',t:'CCS2',kw:50,s:'charging',bat:31,mins:44},{id:'d3',t:'Type2',kw:22,s:'reserved',reservedFor:'16:00'},{id:'d4',t:'Type2',kw:22,s:'available'}]},
-  {id:'st5',name:'Aeropuerto Olaya Herrera',addr:'Cra 65A Nro 13-157',hood:'Belén',x:30,y:56,base:1300,occ:.67,rating:4.2,
-   slots:[{id:'e1',t:'CCS2',kw:50,s:'charging',bat:61,mins:19},{id:'e2',t:'CCS2',kw:50,s:'available'},{id:'e3',t:'Type2',kw:22,s:'offline'}]},
-];
 
-const PRICING_RULES=[
-  {t:'time',h_gte:0,h_lt:6,mult:.80,label:'Valle nocturno'},
-  {t:'time',h_gte:7,h_lt:9,mult:1.25,label:'Pico mañana'},
-  {t:'time',h_gte:17,h_lt:20,mult:1.20,label:'Pico tarde'},
-  {t:'occ',occ_gt:.85,mult:1.50,label:'Muy alta demanda'},
-  {t:'occ',occ_gt:.70,mult:1.30,label:'Alta demanda'},
-  {t:'occ',occ_lt:.25,mult:.85,label:'Baja demanda'},
-];
+// ── Config ────────────────────────────────────────────────
+const API = {
+  base: (typeof window!=='undefined' && window.KARGAYA_API_URL) || location.origin,
+  wsUrl: ((location.protocol==='https:'?'wss://':'ws://') + location.host),
+  token: ()      => localStorage.getItem('kya_token'),
+  setToken: (t)  => t ? localStorage.setItem('kya_token', t) : localStorage.removeItem('kya_token'),
+  user: ()       => { try { return JSON.parse(localStorage.getItem('kya_user')||'null') } catch { return null } },
+  setUser: (u)   => u ? localStorage.setItem('kya_user', JSON.stringify(u)) : localStorage.removeItem('kya_user'),
+};
 
-function calcPrice(stId){
-  const st=STATIONS.find(s=>s.id===stId);if(!st)return{final:1200,mult:1,rule:'Base'};
-  const h=new Date().getHours();
-  let bestMult=1,bestRule='Tarifa base',bestPri=0;
-  for(const r of PRICING_RULES){
-    let ok=false,pri=0;
-    if(r.t==='time'&&h>=r.h_gte&&h<r.h_lt){ok=true;pri=8}
-    if(r.t==='occ'){
-      if(r.occ_gt&&st.occ>r.occ_gt){ok=true;pri=20-r.occ_gt*10}
-      if(r.occ_lt&&st.occ<r.occ_lt){ok=true;pri=5}
-    }
-    if(ok&&pri>bestPri){bestPri=pri;bestMult=r.mult;bestRule=r.label}
+async function api(path, {method='GET', body=null, auth=false}={}) {
+  const headers = { 'Content-Type':'application/json' };
+  if (auth) {
+    const t = API.token();
+    if (!t) { openAuth(); throw new Error('Necesitas iniciar sesión'); }
+    headers.Authorization = 'Bearer ' + t;
   }
-  return{final:Math.round(st.base*bestMult),mult:bestMult,rule:bestRule,base:st.base};
+  let res, data=null;
+  try {
+    res = await fetch(API.base + path, { method, headers, body: body?JSON.stringify(body):undefined });
+  } catch (e) {
+    throw new Error('Sin conexión al backend. ¿Arrancaste `npm run dev`?');
+  }
+  try { data = await res.json(); } catch {}
+  if (!res.ok) {
+    if (res.status === 401 && auth) { API.setToken(null); API.setUser(null); updateAuthUI(); openAuth(); }
+    throw new Error((data && data.error) || `HTTP ${res.status}`);
+  }
+  return data;
 }
 
-function getColor(st){
-  const avail=st.slots.filter(s=>s.s==='available').length;
-  return avail===0?'red':avail<=1||st.occ>.75?'amber':'green';
+// ── UI helpers ────────────────────────────────────────────
+function toast(msg, kind='info', ms=3500) {
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast ' + kind;
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(() => { t.style.transition='opacity .3s'; t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, ms);
 }
-function avail(st){return st.slots.filter(s=>s.s==='available').length}
-function fmtPrice(n){return'$'+Math.round(n).toLocaleString('es-CO')}
+function showLoader(){ document.getElementById('fullLoader').style.display=''; }
+function hideLoader(){ document.getElementById('fullLoader').style.display='none'; }
+function setLivePill(txt, ok=true) {
+  ['livePillMap','livePillOp','livePillDr'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    el.querySelector('span').textContent = txt;
+    el.style.opacity = ok ? '1' : '.6';
+  });
+}
+
+// ── State ─────────────────────────────────────────────────
+let STATIONS = [];                   // mapped from API /stations
+const SLOT_CACHE = {};               // stationId -> {slots:[], pricing:{}}
+const POSITIONS = {
+  st1:{x:70,y:26,rating:4.7},
+  st2:{x:36,y:70,rating:4.5},
+  st3:{x:49,y:48,rating:4.3},
+  st4:{x:64,y:46,rating:4.6},
+  st5:{x:30,y:56,rating:4.2},
+};
+let stationsLoading = false, stationsError = null;
+
+function mapStation(a) {
+  const pos = POSITIONS[a.id] || { x: 50, y: 50, rating: 4.5 };
+  return {
+    id: a.id, name: a.name, addr: a.address, hood: a.neighborhood || '—',
+    x: pos.x, y: pos.y, base: a.base_price, rating: pos.rating,
+    occ: (a.occupancy || 0) / 100,
+    slots_total: a.slots_total || 0,
+    slots_available: a.slots_available || 0,
+    slots_charging: a.slots_charging || 0,
+    slots_reserved: a.slots_reserved || 0,
+  };
+}
+function mapSlot(a) {
+  return {
+    id: a.id,
+    slot_number: a.slot_number,
+    t: a.connector,
+    kw: a.power_kw,
+    s: a.status,
+    bat: a.battery_pct ?? (a.telemetry && a.telemetry.battery_pct) ?? null,
+    mins: null,
+    reservedFor: a.reserved_for || null,
+  };
+}
+
+// ── Load stations ─────────────────────────────────────────
+async function loadStations() {
+  stationsLoading = true; stationsError = null; renderMap();
+  try {
+    const r = await api('/api/v1/stations');
+    STATIONS = (r.data || []).map(mapStation);
+    stationsLoading = false;
+    renderMap();
+    if (selStation) refreshStationDetail(selStation);
+    updateOperatorIfVisible();
+    setLivePill(`${STATIONS.length} estaciones online`, true);
+  } catch (e) {
+    stationsLoading = false;
+    stationsError = e.message;
+    renderMap();
+    setLivePill('Sin conexión', false);
+  }
+}
+
+async function refreshStationDetail(id) {
+  try {
+    const r = await api('/api/v1/stations/' + encodeURIComponent(id));
+    const d = r.data;
+    SLOT_CACHE[id] = {
+      slots: (d.slots || []).map(mapSlot),
+      pricing: d.pricing || null,
+    };
+    if (selStation === id) {
+      const st = STATIONS.find(s => s.id === id);
+      if (st) renderDetailPanel(st);
+    }
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+// ── WebSocket ─────────────────────────────────────────────
+let ws = null, wsRetry = 0, wsTimer = null, wsSub = null;
+
+function wsConnect() {
+  if (ws && (ws.readyState === 0 || ws.readyState === 1)) return;
+  try {
+    ws = new WebSocket(API.wsUrl);
+  } catch (e) { scheduleWsRetry(); return; }
+  ws.onopen = () => {
+    wsRetry = 0;
+    if (wsSub) try { ws.send(JSON.stringify({action:'subscribe', station_id: wsSub})); } catch {}
+  };
+  ws.onmessage = (ev) => {
+    try {
+      const msg = JSON.parse(ev.data);
+      if (msg.type === 'slots_update') applySlotsUpdate(msg);
+    } catch {}
+  };
+  ws.onclose = () => scheduleWsRetry();
+  ws.onerror = () => { try { ws.close(); } catch {} };
+}
+function scheduleWsRetry() {
+  if (wsTimer) return;
+  const delay = Math.min(30000, 1000 * Math.pow(2, wsRetry++));
+  wsTimer = setTimeout(() => { wsTimer = null; wsConnect(); }, delay);
+}
+function wsSubscribe(stationId) {
+  wsSub = stationId;
+  if (ws && ws.readyState === 1) {
+    try { ws.send(JSON.stringify({action:'subscribe', station_id: stationId})); } catch {}
+  } else {
+    wsConnect();
+  }
+}
+function applySlotsUpdate(msg) {
+  const { station_id, slots, pricing } = msg;
+  if (!SLOT_CACHE[station_id]) SLOT_CACHE[station_id] = { slots: [], pricing: null };
+  SLOT_CACHE[station_id].slots = slots.map(s => ({
+    id: s.id, slot_number: s.slot_number, t: s.connector, kw: s.power_kw,
+    s: s.status, bat: s.battery_pct ?? null, mins: null, reservedFor: null,
+  }));
+  if (pricing && SLOT_CACHE[station_id].pricing) {
+    SLOT_CACHE[station_id].pricing.final_price = pricing.price;
+  } else if (pricing) {
+    SLOT_CACHE[station_id].pricing = { final_price: pricing.price, multiplier: 1, rule_applied: '—', base_price: null, occupancy_pct: 0 };
+  }
+  // Recompute station occupancy from slots
+  const st = STATIONS.find(s => s.id === station_id);
+  if (st) {
+    const total = slots.length;
+    const avail = slots.filter(x => x.status==='available').length;
+    const ch    = slots.filter(x => x.status==='charging').length;
+    const rs    = slots.filter(x => x.status==='reserved').length;
+    st.slots_total = total; st.slots_available = avail; st.slots_charging = ch; st.slots_reserved = rs;
+    st.occ = total ? (ch + rs) / total : 0;
+  }
+  if (selStation === station_id) {
+    const s = STATIONS.find(x => x.id === station_id);
+    if (s) renderDetailPanel(s);
+  }
+  renderPins(); renderStationList(); updatePriceOverlay();
+}
+
+// ── Auth ──────────────────────────────────────────────────
+function updateAuthUI() {
+  const u = API.user();
+  const html = u
+    ? `<div class="user-chip"><span>${u.name ? u.name.split(' ')[0] : u.email}</span>
+         <div class="avatar">${(u.name||'U').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase()}</div>
+         <button class="nav-auth-btn secondary" onclick="logout()" title="Cerrar sesión">Salir</button></div>`
+    : `<button class="nav-auth-btn secondary" onclick="openAuth('login')">Entrar</button>
+       <button class="nav-auth-btn" onclick="openAuth('register')">Registro</button>`;
+  ['authZone1','authZone2','authZone3'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.innerHTML = html;
+  });
+}
+function openAuth(mode='login'){
+  authMode = mode;
+  document.getElementById('authModal').style.display='';
+  renderAuth();
+}
+function closeAuth(){ document.getElementById('authModal').style.display='none'; }
+let authMode='login', authBusy=false;
+
+function renderAuth() {
+  document.getElementById('authTitle').textContent = authMode==='login' ? 'Iniciar sesión' : 'Crear cuenta';
+  const isR = authMode === 'register';
+  let body = `
+    ${isR?`<div class="auth-field"><label>Nombre</label><input id="au_name" type="text" autocomplete="name"></div>`:''}
+    <div class="auth-field"><label>Email</label><input id="au_email" type="email" autocomplete="email"></div>
+    ${isR?`<div class="auth-field"><label>Teléfono</label><input id="au_phone" type="tel" autocomplete="tel"></div>`:''}
+    <div class="auth-field"><label>Contraseña</label><input id="au_pw" type="password" autocomplete="${isR?'new-password':'current-password'}"></div>
+    <div class="auth-switch">${isR
+      ? `¿Ya tienes cuenta? <a onclick="authMode='login';renderAuth()">Entrar</a>`
+      : `¿No tienes cuenta? <a onclick="authMode='register';renderAuth()">Regístrate</a>`}
+    </div>`;
+  const foot = `<button class="mf-sec" onclick="closeAuth()">Cancelar</button>
+    <button class="mf-pri" id="auSubmit" onclick="submitAuth()">${authBusy?'<span class="loader-inline"></span>':''}${isR?'Crear cuenta':'Entrar'}</button>`;
+  document.getElementById('authBody').innerHTML = body;
+  document.getElementById('authFoot').innerHTML = foot;
+  setTimeout(() => { const f = document.getElementById(isR?'au_name':'au_email'); if (f) f.focus(); }, 50);
+}
+
+async function submitAuth() {
+  if (authBusy) return;
+  const isR = authMode === 'register';
+  const email = document.getElementById('au_email').value.trim();
+  const pw    = document.getElementById('au_pw').value;
+  if (!email || !pw) { toast('Email y contraseña son obligatorios','err'); return; }
+  if (isR && pw.length < 8) { toast('La contraseña debe tener al menos 8 caracteres','err'); return; }
+  authBusy = true; renderAuth();
+  try {
+    const body = isR
+      ? { name: document.getElementById('au_name').value.trim(), email, phone: document.getElementById('au_phone').value.trim(), password: pw }
+      : { email, password: pw };
+    const r = await api('/api/v1/auth/' + (isR?'register':'login'), { method:'POST', body });
+    API.setToken(r.token); API.setUser(r.user);
+    updateAuthUI();
+    toast(isR?`¡Bienvenido, ${r.user.name}!`:`Sesión iniciada`, 'ok');
+    closeAuth();
+  } catch (e) { toast(e.message, 'err'); }
+  finally { authBusy = false; if (document.getElementById('authModal').style.display!=='none') renderAuth(); }
+}
+
+function logout() {
+  API.setToken(null); API.setUser(null); updateAuthUI();
+  toast('Sesión cerrada', 'info');
+  if (driverTab >= 2) { driverTab = 0; renderDriverApp(); }
+}
+
+async function tryRestoreSession() {
+  if (!API.token()) { updateAuthUI(); return; }
+  try {
+    const r = await api('/api/v1/auth/me', { auth: true });
+    API.setUser(r.data);
+  } catch (e) { /* invalid token already cleared in api() */ }
+  updateAuthUI();
+}
+
+// ── Compat helpers for existing UI ────────────────────────
+function getColor(st){
+  const a = st.slots_available || 0;
+  return a===0 ? 'red' : (a<=1 || st.occ > .75 ? 'amber' : 'green');
+}
+function avail(st){ return st.slots_available || 0; }
+function fmtPrice(n){return'$'+Math.round(n||0).toLocaleString('es-CO')}
 function fmtTime(mins){if(mins<=0)return'<1 min';const h=Math.floor(mins/60),m=mins%60;return h>0?`${h}h ${m}m`:m+' min'}
 function timeLeft(slot){
   if(!slot.bat||!slot.kw)return 0;
   const rem=Math.max(0,90-slot.bat);
   return Math.round((rem/100*60*1000)/slot.kw);
+}
+function priceFor(stId){
+  const c = SLOT_CACHE[stId];
+  if (c && c.pricing) return c.pricing;
+  const st = STATIONS.find(s=>s.id===stId);
+  return { final_price: (st && st.base) || 1200, multiplier: 1, rule_applied:'Tarifa base', base_price: st && st.base, occupancy_pct: st ? Math.round(st.occ*100) : 0 };
 }
 
 // ══ NAV ═══════════════════════════════════════════════════
@@ -700,6 +977,7 @@ function renderMap(){
 
 function renderPins(){
   const container=document.getElementById('pins');
+  if(!container)return;
   container.innerHTML='';
   filteredStations().forEach(st=>{
     const color=getColor(st);
@@ -717,12 +995,23 @@ function renderPins(){
 
 function renderStationList(){
   const list=document.getElementById('stationList');
+  if(!list)return;
+  if (stationsLoading && STATIONS.length===0) {
+    document.getElementById('sb-count').textContent='Cargando…';
+    list.innerHTML = `<div class="list-loading"><span class="loader-inline"></span>Buscando estaciones…</div>`;
+    return;
+  }
+  if (stationsError && STATIONS.length===0) {
+    document.getElementById('sb-count').textContent='Error';
+    list.innerHTML = `<div class="err-banner">${stationsError}<button onclick="loadStations()">Reintentar</button></div>`;
+    return;
+  }
   const sts=filteredStations();
   document.getElementById('sb-count').textContent=`${sts.length} estación${sts.length!==1?'es':''} en Medellín`;
   list.innerHTML='';
   sts.forEach(st=>{
     const color=getColor(st);const avl=avail(st);
-    const pr=calcPrice(st.id);
+    const pr=priceFor(st.id);
     const avClass=color==='green'?'av-g':color==='amber'?'av-a':'av-r';
     const avText=avl===0?'Sin disponibilidad':`${avl} libre${avl!==1?'s':''}`;
     const div=document.createElement('div');
@@ -732,8 +1021,8 @@ function renderStationList(){
     <div class="st-addr">${st.addr} · ${st.hood}</div>
     <div class="st-foot">
       <span class="avail ${avClass}">${avText}</span>
-      <span style="font-size:11px;color:var(--m2)">${st.slots.length} slots</span>
-      <span class="st-price">${fmtPrice(pr.final)}/kWh</span>
+      <span style="font-size:11px;color:var(--m2)">${st.slots_total} slots</span>
+      <span class="st-price">${fmtPrice(pr.final_price)}/kWh</span>
     </div>`;
     list.appendChild(div);
   });
@@ -741,9 +1030,15 @@ function renderStationList(){
 
 function filteredStations(){
   return STATIONS.filter(st=>{
-    if(filterMode==='available'&&avail(st)===0)return false;
-    if(filterMode==='fast'&&!st.slots.some(s=>s.kw>=50))return false;
-    if(searchQ&&!st.name.toLowerCase().includes(searchQ.toLowerCase())&&!st.hood.toLowerCase().includes(searchQ.toLowerCase()))return false;
+    if(filterMode==='available' && avail(st)===0) return false;
+    if(filterMode==='fast'){
+      const cache = SLOT_CACHE[st.id];
+      if (cache && cache.slots.length) {
+        if (!cache.slots.some(s=>s.kw>=50)) return false;
+      }
+      // sin cache: no excluimos; se filtrará cuando se cargue
+    }
+    if(searchQ && !st.name.toLowerCase().includes(searchQ.toLowerCase()) && !st.hood.toLowerCase().includes(searchQ.toLowerCase())) return false;
     return true;
   });
 }
@@ -756,37 +1051,52 @@ function setFilter(el,mode){
 function filterStations(q){searchQ=q;renderMap();}
 
 function selectStation(id){
-  selStation=selStation===id?null:id;
-  renderPins();renderStationList();
+  selStation = selStation === id ? null : id;
+  renderPins(); renderStationList();
   const hint=document.getElementById('mapHint');
-  if(selStation){
+  if (selStation){
     hint.style.display='none';
-    renderDetailPanel(STATIONS.find(s=>s.id===selStation));
+    const st = STATIONS.find(s=>s.id===selStation);
+    if (st) renderDetailPanel(st);
+    refreshStationDetail(selStation);
+    wsSubscribe(selStation);
   } else {
     hint.style.display='';
     document.getElementById('detailPanel').classList.add('hidden');
+    wsSub = null;
   }
 }
 
-function closePanel(){selStation=null;renderPins();renderStationList();document.getElementById('mapHint').style.display='';document.getElementById('detailPanel').classList.add('hidden');}
+function closePanel(){selStation=null;wsSub=null;renderPins();renderStationList();document.getElementById('mapHint').style.display='';document.getElementById('detailPanel').classList.add('hidden');}
 
 function renderDetailPanel(st){
   const panel=document.getElementById('detailPanel');
   panel.classList.remove('hidden');
+  const cache = SLOT_CACHE[st.id];
+  const slots = cache ? cache.slots : null;
+  const pr = priceFor(st.id);
+  const avl = avail(st);
+  const totalSlots = st.slots_total || (slots?slots.length:0);
   document.getElementById('dpName').textContent=st.name;
   document.getElementById('dpAddr').textContent=st.addr+' · '+st.hood;
-  document.getElementById('dpStars').textContent=`★ ${st.rating} · ${st.slots.length} conectores`;
-  const pr=calcPrice(st.id);
-  const avl=avail(st);const ch=st.slots.filter(s=>s.s==='charging').length;
-  const rs=st.slots.filter(s=>s.s==='reserved').length;const off=st.slots.filter(s=>s.s==='offline').length;
-  const occPct=Math.round(st.occ*100);
-  const fillColor=st.occ>.75?'var(--amber)':'var(--green)';
+  document.getElementById('dpStars').textContent=`★ ${st.rating} · ${totalSlots} conectores`;
+
+  if (!slots) {
+    document.getElementById('dpBody').innerHTML = `<div class="list-loading"><span class="loader-inline"></span>Cargando slots…</div>`;
+    return;
+  }
+  const ch = slots.filter(s=>s.s==='charging').length;
+  const rs = slots.filter(s=>s.s==='reserved').length;
+  const off= slots.filter(s=>s.s==='offline').length;
+  const occPct = Math.round(st.occ*100);
+  const fillColor = st.occ > .75 ? 'var(--amber)' : 'var(--green)';
+  const mult = pr.multiplier || 1;
 
   let html=`<div class="pricing-card">
-    <div class="pc-price">${fmtPrice(pr.final)}</div>
-    <div class="pc-unit">/kWh · ${pr.rule}</div>
+    <div class="pc-price">${fmtPrice(pr.final_price)}</div>
+    <div class="pc-unit">/kWh · ${pr.rule_applied || 'Tarifa base'}</div>
     <div class="pc-bar"><div class="pc-fill" style="width:${occPct}%;background:${fillColor}"></div></div>
-    <div class="pc-meta"><span>Ocupación · ×${pr.mult.toFixed(1)}</span><span>${occPct}%</span></div>
+    <div class="pc-meta"><span>Ocupación · ×${Number(mult).toFixed(1)}</span><span>${occPct}%</span></div>
   </div>
   <div class="stats-row">
     <div class="stat-box"><div class="stat-val" style="color:var(--green)">${avl}</div><div class="stat-lbl">Libres</div></div>
@@ -796,9 +1106,9 @@ function renderDetailPanel(st){
   </div>
   <div class="slots-lbl">Slots en tiempo real</div>`;
 
-  st.slots.forEach(slot=>{
+  slots.forEach(slot=>{
     const batColor=slot.bat>70?'var(--green)':slot.bat>40?'var(--amber)':'var(--red)';
-    const tl=slot.bat?timeLeft(slot):0;
+    const tl = slot.bat ? timeLeft(slot) : 0;
     const cardCls=slot.s==='available'?'av':slot.s==='charging'?'ch':slot.s==='reserved'?'rs':'off';
     const connCls=slot.t==='CCS2'?'conn-ccs':'conn-t2';
     const ssCls=slot.s==='available'?'ss-av':slot.s==='charging'?'ss-ch':slot.s==='reserved'?'ss-rs':'ss-off';
@@ -809,13 +1119,17 @@ function renderDetailPanel(st){
         <span class="slot-kw">${slot.kw} kW</span>
         <span class="slot-status ${ssCls}">${ssLbl}</span>
       </div>`;
-    if(slot.s==='charging'&&slot.bat){
+    if (slot.s==='charging' && slot.bat){
       html+=`<div class="bat-row"><span class="bat-lbl">Batería</span>
         <div class="bat-track"><div class="bat-fill" style="width:${slot.bat}%;background:${batColor}"></div></div>
         <span class="bat-pct" style="color:${batColor}">${Math.round(slot.bat)}%</span></div>
       <div class="time-row"><span class="time-lbl">Tiempo restante</span><span class="time-val">${fmtTime(tl)}</span></div>`;
     }
-    if(slot.s==='reserved'){html+=`<div class="time-row"><span class="time-lbl">Reservado para</span><span class="time-val" style="color:var(--blue)">${slot.reservedFor}</span></div>`;}
+    if (slot.s==='reserved' && slot.reservedFor) {
+      const rf = new Date(slot.reservedFor);
+      const txt = isNaN(rf) ? slot.reservedFor : rf.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+      html+=`<div class="time-row"><span class="time-lbl">Reservado para</span><span class="time-val" style="color:var(--blue)">${txt}</span></div>`;
+    }
     html+='</div>';
   });
 
@@ -826,24 +1140,43 @@ function renderDetailPanel(st){
 }
 
 function updatePriceOverlay(){
-  const avgOcc=STATIONS.reduce((a,s)=>a+s.occ,0)/STATIONS.length;
-  const prices=STATIONS.map(s=>calcPrice(s.id).final);
-  const avg=Math.round(prices.reduce((a,b)=>a+b,0)/prices.length);
-  document.getElementById('avgPrice').innerHTML=fmtPrice(avg)+'<span style="font-size:13px;font-weight:400;color:var(--m2)">/kWh</span>';
-  document.getElementById('demandBar').style.width=Math.round(avgOcc*100)+'%';
-  document.getElementById('demandBar').style.background=avgOcc>.7?'var(--amber)':'var(--green)';
-  document.getElementById('demandPct').textContent=Math.round(avgOcc*100)+'%';
+  const el = document.getElementById('avgPrice'); if(!el) return;
+  if (!STATIONS.length) { el.innerHTML = '—'; return; }
+  const avgOcc = STATIONS.reduce((a,s)=>a+(s.occ||0),0) / STATIONS.length;
+  const prices = STATIONS.map(s => priceFor(s.id).final_price);
+  const avg = Math.round(prices.reduce((a,b)=>a+b,0) / prices.length);
+  el.innerHTML = fmtPrice(avg)+'<span style="font-size:13px;font-weight:400;color:var(--m2)">/kWh</span>';
+  const bar = document.getElementById('demandBar');
+  bar.style.width = Math.round(avgOcc*100)+'%';
+  bar.style.background = avgOcc > .7 ? 'var(--amber)' : 'var(--green)';
+  document.getElementById('demandPct').textContent = Math.round(avgOcc*100)+'%';
 }
 
 // ══ RESERVATION MODAL ════════════════════════════════════
-const TIMES=['13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30'];
-const TAKEN=['14:00','15:00','15:30'];
-const PAYS=[{id:'nequi',icon:'📲',name:'Nequi'},{id:'pse',icon:'🏦',name:'PSE'},{id:'card',icon:'💳',name:'Tarjeta'}];
+const PAYS=[{id:'wallet',icon:'💼',name:'Billetera KargaYa'},{id:'nequi',icon:'📲',name:'Nequi'},{id:'pse',icon:'🏦',name:'PSE'},{id:'card',icon:'💳',name:'Tarjeta'}];
+let resState={step:1,time:null,pay:'wallet',stId:null,slotId:null,busy:false,confirmed:null};
 
-let resState={step:1,time:null,pay:null,stId:null};
+function buildTimeSlots(){
+  // 10 slots de 30 min desde la próxima media hora.
+  const out=[];
+  const d = new Date();
+  d.setSeconds(0,0);
+  const m = d.getMinutes();
+  d.setMinutes(m < 30 ? 30 : 60);
+  for (let i=0; i<10; i++){
+    const hh=String(d.getHours()).padStart(2,'0'), mm=String(d.getMinutes()).padStart(2,'0');
+    out.push({ label: `${hh}:${mm}`, iso: new Date(d.getTime()).toISOString() });
+    d.setMinutes(d.getMinutes()+30);
+  }
+  return out;
+}
 
 function openReservation(stId){
-  resState={step:1,time:null,pay:null,stId};
+  if (!API.token()) { toast('Primero inicia sesión', 'info'); openAuth('login'); return; }
+  const cache = SLOT_CACHE[stId];
+  const slot = cache && cache.slots.find(s=>s.s==='available');
+  if (!slot) { toast('No hay slots disponibles ahora','err'); return; }
+  resState={step:1, time:null, pay:'wallet', stId, slotId:slot.id, busy:false, confirmed:null};
   document.getElementById('resModal').style.display='';
   renderModal();
 }
@@ -851,62 +1184,66 @@ function closeModal(){document.getElementById('resModal').style.display='none';}
 
 function renderModal(){
   const st=STATIONS.find(s=>s.id===resState.stId);
-  const pr=calcPrice(st.id);
-  const {step,time,pay}=resState;
+  const cache = SLOT_CACHE[st.id];
+  const slot = cache ? cache.slots.find(s=>s.id===resState.slotId) : null;
+  const pr=priceFor(st.id);
+  const {step,time,pay,busy}=resState;
   document.getElementById('modalTitle').textContent=step===1?'Seleccionar horario':step===2?'Confirmar reserva':'✓ Reserva confirmada';
 
   const steps=`<div class="steps">${[1,2,3].map(s=>`<div class="step-seg ${s<step?'done':s===step?'active':''}"></div>`).join('')}</div>`;
+  const TIMES = buildTimeSlots();
 
   let body='',foot='';
 
   if(step===1){
-    const avSlot=st.slots.find(s=>s.s==='available');
     body=`${steps}
     <div style="background:var(--card);border:1px solid var(--b);border-radius:var(--r2);padding:14px;margin-bottom:18px">
       <div style="font-family:var(--display);font-size:14px;font-weight:700;margin-bottom:2px">${st.name}</div>
       <div style="font-size:11px;color:var(--m2);margin-bottom:10px">${st.addr}</div>
       <div style="display:flex;gap:20px">
-        <div><div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--green)">${fmtPrice(pr.final)}</div><div style="font-size:10px;color:var(--m)">/kWh ahora</div></div>
-        <div><div style="font-family:var(--display);font-size:20px;font-weight:700">${avSlot?avSlot.t:'N/A'}</div><div style="font-size:10px;color:var(--m)">Conector</div></div>
-        <div><div style="font-family:var(--display);font-size:20px;font-weight:700">${avSlot?avSlot.kw:0} kW</div><div style="font-size:10px;color:var(--m)">Potencia</div></div>
+        <div><div style="font-family:var(--display);font-size:20px;font-weight:700;color:var(--green)">${fmtPrice(pr.final_price)}</div><div style="font-size:10px;color:var(--m)">/kWh ahora</div></div>
+        <div><div style="font-family:var(--display);font-size:20px;font-weight:700">${slot?slot.t:'N/A'}</div><div style="font-size:10px;color:var(--m)">Conector</div></div>
+        <div><div style="font-family:var(--display);font-size:20px;font-weight:700">${slot?slot.kw:0} kW</div><div style="font-size:10px;color:var(--m)">Potencia</div></div>
       </div>
     </div>
     <div class="field-lbl">Hora de llegada</div>
-    <div class="time-grid">${TIMES.map(t=>`<div class="tslot${TAKEN.includes(t)?' taken':''}${resState.time===t?' sel':''}" onclick="selectTime('${t}')">${t}</div>`).join('')}</div>
-    ${time?`<div style="font-size:11px;color:var(--m2)">Ventana garantizada de 10 minutos desde las ${time}.</div>`:''}`;
+    <div class="time-grid">${TIMES.map(t=>`<div class="tslot${resState.time===t.iso?' sel':''}" onclick="selectTime('${t.iso}')">${t.label}</div>`).join('')}</div>
+    ${time?`<div style="font-size:11px;color:var(--m2)">Ventana garantizada de 10 minutos desde las ${new Date(time).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}.</div>`:''}`;
     foot=`<button class="mf-sec" onclick="closeModal()">Cancelar</button>
     <button class="mf-pri" onclick="nextStep()" ${!time?'disabled':''}>Continuar →</button>`;
   }
 
   if(step===2){
-    const avSlot=st.slots.find(s=>s.s==='available');
-    const est=Math.round(pr.final*30*.6);
+    const timeTxt = time ? new Date(time).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}) : '—';
+    const est = Math.round(pr.final_price*30*.6);
+    const deposit = Math.round(pr.final_price*10);
     body=`${steps}
     <div class="field-lbl">Método de pago</div>
     <div class="pay-grid">${PAYS.map(p=>`<div class="pay-card${pay===p.id?' sel':''}" onclick="selectPay('${p.id}')"><div class="pay-icon">${p.icon}</div><div class="pay-name">${p.name}</div></div>`).join('')}</div>
     <div class="confirm-box">
       <div class="cr"><span class="cl">Estación</span><span class="cv" style="font-size:11px;text-align:right;max-width:180px">${st.name}</span></div>
-      <div class="cr"><span class="cl">Hora pactada</span><span class="cv">${time}</span></div>
-      <div class="cr"><span class="cl">Conector</span><span class="cv">${avSlot?avSlot.t+' · '+avSlot.kw+' kW':'—'}</span></div>
-      <div class="cr"><span class="cl">Tarifa actual</span><span class="cv" style="color:var(--green);font-family:var(--mono)">${fmtPrice(pr.final)}/kWh</span></div>
+      <div class="cr"><span class="cl">Hora pactada</span><span class="cv">${timeTxt}</span></div>
+      <div class="cr"><span class="cl">Conector</span><span class="cv">${slot?slot.t+' · '+slot.kw+' kW':'—'}</span></div>
+      <div class="cr"><span class="cl">Tarifa actual</span><span class="cv" style="color:var(--green);font-family:var(--mono)">${fmtPrice(pr.final_price)}/kWh</span></div>
       <div style="border-top:1px solid var(--b);margin-top:8px;padding-top:8px">
         <div class="cr"><span class="cl" style="font-weight:600">Costo estimado (30 kWh)</span><span class="cg">${fmtPrice(est)}</span></div>
       </div>
     </div>
-    <div style="font-size:11px;color:var(--m2);line-height:1.7">Depósito bloqueado al confirmar: <strong style="color:var(--t)">${fmtPrice(pr.final*10)} COP</strong>. El cobro final se hace al terminar la sesión.</div>`;
-    foot=`<button class="mf-sec" onclick="prevStep()">← Atrás</button>
-    <button class="mf-pri" onclick="nextStep()" ${!pay?'disabled':''}>Confirmar reserva</button>`;
+    <div style="font-size:11px;color:var(--m2);line-height:1.7">Depósito bloqueado al confirmar: <strong style="color:var(--t)">${fmtPrice(deposit)} COP</strong>. El cobro final se hace al terminar la sesión.</div>`;
+    foot=`<button class="mf-sec" onclick="prevStep()" ${busy?'disabled':''}>← Atrás</button>
+    <button class="mf-pri" id="reserveBtn" onclick="submitReservation()" ${!pay||busy?'disabled':''}>${busy?'<span class="loader-inline"></span>':''}Confirmar reserva</button>`;
   }
 
   if(step===3){
-    const qr=generateQR();
+    const c = resState.confirmed || {};
+    const timeTxt = c.reserved_for ? new Date(c.reserved_for).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}) : '—';
     body=`${steps}
     <div class="success-box">
       <div class="succ-icon">⚡</div>
       <div class="succ-title">¡Reserva confirmada!</div>
-      <div class="succ-sub">Tu slot está reservado en <strong>${st.name}</strong><br>para las <strong>${time}</strong>. Tienes 10 minutos de ventana.</div>
-      <div class="qr-block">${qr}</div>
-      <div class="notif-box">Recibirás notificación push de KargaYa cuando llegue tu hora y cuando la carga supere el 80%.</div>
+      <div class="succ-sub">Tu slot está reservado en <strong>${st.name}</strong><br>para las <strong>${timeTxt}</strong>. Tienes 10 minutos de ventana.</div>
+      <div style="background:var(--card2);border:1px solid var(--b);border-radius:var(--r);padding:12px;margin:14px 0;font-family:var(--mono);font-size:12px;color:var(--m3);text-align:center">Código de reserva<br><strong style="color:var(--green);font-size:15px;letter-spacing:1px">${c.id || '—'}</strong></div>
+      <div class="notif-box">Depósito bloqueado: <strong style="color:var(--t)">${fmtPrice(c.deposit_amount||0)}</strong>. Saldo billetera: <strong style="color:var(--green)">${fmtPrice(c.wallet_balance||0)}</strong>.</div>
     </div>`;
     foot=`<button class="mf-pri" onclick="closeModal()">Ver en el mapa</button>`;
   }
@@ -915,19 +1252,54 @@ function renderModal(){
   document.getElementById('modalFoot').innerHTML=foot;
 }
 
-function generateQR(){
-  const cells=Array.from({length:25},(_,i)=>Math.random()>.4?'var(--green)':'var(--card2)');
-  return`<div class="qr-inner">${cells.map(c=>`<div class="qr-cell" style="background:${c}"></div>`).join('')}</div>`;
+async function submitReservation(){
+  if (resState.busy) return;
+  const { stId, slotId, time, pay } = resState;
+  if (!slotId || !time) { toast('Selecciona un horario','err'); return; }
+  resState.busy = true; renderModal();
+  try {
+    const r = await api('/api/v1/reservations', {
+      method:'POST', auth:true,
+      body: { slot_id: slotId, reserved_for: time, vehicle_id: null }
+    });
+    resState.confirmed = {
+      id: r.data && r.data.id,
+      reserved_for: r.data && r.data.reserved_for,
+      deposit_amount: r.deposit_charged,
+      wallet_balance: r.wallet_balance,
+    };
+    resState.step = 3;
+    toast('Reserva creada', 'ok');
+    // refrescar estado del slot/estación
+    refreshStationDetail(stId);
+    loadStations();
+  } catch (e) {
+    toast(e.message, 'err');
+  } finally {
+    resState.busy = false;
+    renderModal();
+  }
 }
 
-function selectTime(t){resState.time=t;renderModal();}
+function selectTime(iso){resState.time=iso;renderModal();}
 function selectPay(p){resState.pay=p;renderModal();}
 function nextStep(){if(resState.step<3)resState.step++;renderModal();}
 function prevStep(){if(resState.step>1)resState.step--;renderModal();}
 
 // ══ OPERATOR SCREEN ═══════════════════════════════════════
+// TODO-op-metrics: OCC_DATA/REV_DATA/revs/alerts quedan mock
+// hasta que exista /api/v1/operators/metrics. KPIs y tabla usan STATIONS reales.
 function renderOperator(){
   renderOccChart();renderRevChart();renderStationTable();renderSessionsLive();
+  const kocc=document.getElementById('kpi-occ');
+  if (kocc && STATIONS.length) {
+    const avg = Math.round(STATIONS.reduce((a,s)=>a+(s.occ||0),0) / STATIONS.length * 100);
+    kocc.textContent = avg+'%';
+  }
+}
+function updateOperatorIfVisible(){
+  const op=document.getElementById('op-screen');
+  if (op && op.classList.contains('active')) renderOperator();
 }
 
 const OCC_DATA=[12,28,55,72,61,58,64,78,85,82,75,68,74,70];
@@ -958,259 +1330,257 @@ function renderRevChart(){
 
 function renderStationTable(){
   const tb=document.getElementById('stationTableBody');if(!tb)return;
-  const revs=[187400,98200,312100,201300,88900];
-  const alerts=[0,0,1,0,1];
+  if (!STATIONS.length) { tb.innerHTML=`<tr><td colspan="5" class="empty-state">Sin datos de estaciones.</td></tr>`; return; }
+  // TODO-op-metrics: ingresos/alertas por estación requieren endpoints nuevos
+  const mockRev=[187400,98200,312100,201300,88900];
+  const mockAlerts=[0,0,1,0,1];
   tb.innerHTML=STATIONS.map((st,i)=>{
-    const pr=calcPrice(st.id);
-    const occ=Math.round(st.occ*100);
+    const occ=Math.round((st.occ||0)*100);
     const col=st.occ>.8?'var(--amber)':st.occ>.6?'var(--green)':'var(--blue)';
+    const rev = mockRev[i] ?? 0;
+    const al = mockAlerts[i] ?? 0;
     return`<tr>
       <td style="font-weight:600;font-family:var(--display)">${st.name}</td>
       <td><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--green)"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>Online</span></td>
       <td><span class="occ-bar"><span class="occ-fill" style="width:${occ}%;background:${col};height:100%;display:block;border-radius:4px"></span></span> <span style="font-family:var(--mono);font-size:11px;color:${col};margin-left:6px">${occ}%</span></td>
-      <td style="font-family:var(--mono);color:var(--green)">${fmtPrice(revs[i])}</td>
-      <td>${alerts[i]>0?`<span class="tag tag-r">${alerts[i]} alerta</span>`:'<span style="color:var(--m)">—</span>'}</td>
+      <td style="font-family:var(--mono);color:var(--green)">${fmtPrice(rev)}</td>
+      <td>${al>0?`<span class="tag tag-r">${al} alerta</span>`:'<span style="color:var(--m)">—</span>'}</td>
     </tr>`;
   }).join('');
 }
 
 function renderSessionsLive(){
   const el=document.getElementById('sessionsLive');if(!el)return;
-  const activeSessions=STATIONS.flatMap(st=>st.slots.filter(s=>s.s==='charging').map(s=>({...s,stName:st.name})));
-  const countEl=document.getElementById('sessCount');if(countEl)countEl.textContent=activeSessions.length;
-  document.getElementById('kpi-sess').textContent=activeSessions.length;
-  el.innerHTML=activeSessions.slice(0,5).map(s=>{
-    const col=s.bat>70?'var(--green)':s.bat>40?'var(--amber)':'var(--red)';
+  // Agregamos de SLOT_CACHE (slots con telemetría activa)
+  const sessions=[];
+  STATIONS.forEach(st=>{
+    const c = SLOT_CACHE[st.id];
+    if (!c) return;
+    c.slots.filter(s=>s.s==='charging').forEach(s=>sessions.push({...s, stName:st.name}));
+  });
+  const countEl=document.getElementById('sessCount');if(countEl)countEl.textContent=sessions.length;
+  const ks=document.getElementById('kpi-sess');if(ks)ks.textContent=sessions.length;
+  if (!sessions.length) {
+    el.innerHTML=`<div class="empty-state">Selecciona una estación en el mapa para ver sesiones en vivo.</div>`;
+    return;
+  }
+  el.innerHTML=sessions.slice(0,5).map(s=>{
+    const bat = s.bat ?? 0;
+    const col = bat>70?'var(--green)':bat>40?'var(--amber)':'var(--red)';
     return`<div class="sess-item">
       <div class="sess-ikon" style="background:var(--ad)">⚡</div>
       <div style="flex:1;min-width:0">
-        <div class="sess-plate">MED·${Math.floor(Math.random()*900)+100}</div>
+        <div class="sess-plate">Slot #${s.slot_number||'—'}</div>
         <div class="sess-info">${s.stName} · ${s.t} · ${s.kw}kW</div>
       </div>
       <div class="sess-bat">
-        <div class="sess-bat-n" style="color:${col}">${Math.round(s.bat)}%</div>
-        <div class="sess-bat-t">${s.mins} min</div>
+        <div class="sess-bat-n" style="color:${col}">${Math.round(bat)}%</div>
+        <div class="sess-bat-t">${s.t}</div>
       </div>
     </div>`;
   }).join('');
 }
 
 // ══ DRIVER APP ════════════════════════════════════════════
-let phTab=0;
-let phSession={bat:67,kw:50,kwh:9.4,cost:13536,mins:22,active:true};
+let driverTab = 0;
+let myReservations = null, myHistory = null, driverLoading = false, driverError = null;
 
 function renderDriverApp(){renderPhNav();renderPhScreen();}
 
 function renderPhNav(){
-  const nav=document.getElementById('phNav');
-  const tabs=[{icon:'🏠',lbl:'Inicio'},{icon:'⚡',lbl:'Cargando',dot:phSession.active},{icon:'📅',lbl:'Reservas'},{icon:'📋',lbl:'Historial'},{icon:'👤',lbl:'Perfil'}];
-  nav.innerHTML=tabs.map((t,i)=>`<div class="bni${phTab===i?' on':''}" onclick="setPhTab(${i})" style="position:relative">
+  const nav=document.getElementById('phNav'); if(!nav) return;
+  const tabs=[{icon:'🏠',lbl:'Inicio'},{icon:'⚡',lbl:'Cargando'},{icon:'📅',lbl:'Reservas'},{icon:'📋',lbl:'Historial'},{icon:'👤',lbl:'Perfil'}];
+  nav.innerHTML=tabs.map((t,i)=>`<div class="bni${driverTab===i?' on':''}" onclick="setPhTab(${i})" style="position:relative">
     <div class="bni-icon">${t.icon}</div>
     <div class="bni-lbl">${t.lbl}</div>
-    ${t.dot&&phTab!==i?'<div class="bni-dot"></div>':''}
   </div>`).join('');
 }
 
-function setPhTab(i){phTab=i;renderPhNav();renderPhScreen();}
+function setPhTab(i){
+  driverTab=i;
+  renderPhNav();
+  if (i===2) loadMyReservations();
+  if (i===3) loadMyHistory();
+  renderPhScreen();
+}
 
 function renderPhScreen(){
-  const sc=document.getElementById('phScreen');
-  if(phTab===0)sc.innerHTML=homeScreen();
-  else if(phTab===1)sc.innerHTML=chargingScreen();
-  else if(phTab===2)sc.innerHTML=reservationsScreen();
-  else if(phTab===3)sc.innerHTML=historyScreen();
+  const sc=document.getElementById('phScreen'); if(!sc) return;
+  if(driverTab===0)sc.innerHTML=homeScreen();
+  else if(driverTab===1)sc.innerHTML=chargingScreen();
+  else if(driverTab===2)sc.innerHTML=reservationsScreen();
+  else if(driverTab===3)sc.innerHTML=historyScreen();
   else sc.innerHTML=profileScreen();
 }
 
 function homeScreen(){
-  const s=phSession;
-  let banner='';
-  if(s.active){
-    banner=`<div class="active-banner" onclick="setPhTab(1)">
-      <div class="ab-top"><div class="ab-pulse"></div><span class="ab-lbl">Cargando ahora</span><span class="ab-st">El Tesoro · CCS2</span></div>
-      <div class="ab-stats">
-        <div class="abs-item"><div class="abs-val" style="color:var(--green)">${Math.round(s.bat)}%</div><div class="abs-lbl">Batería</div></div>
-        <div class="abs-item"><div class="abs-val" style="color:var(--amber)">${fmtTime(timeLeft({bat:s.bat,kw:s.kw}))}</div><div class="abs-lbl">Resta</div></div>
-        <div class="abs-item"><div class="abs-val">${fmtPrice(s.cost)}</div><div class="abs-lbl">Costo</div></div>
-        <div class="abs-item"><div class="abs-val" style="color:var(--blue)">${s.kw}kW</div><div class="abs-lbl">Potencia</div></div>
-      </div>
-      <div class="ab-bar-track"><div class="ab-bar-fill" style="width:${s.bat}%"></div></div>
-    </div>`;
-  }
-  const nearby=STATIONS.slice(0,4).map(st=>{
-    const pr=calcPrice(st.id);const avl=avail(st);
-    const col=avl===0?'var(--red)':avl<=1?'var(--amber)':'var(--green)';
+  const u = API.user();
+  const name = u ? (u.name||u.email||'').split(' ')[0] : 'invitado';
+  const initials = u ? (u.name||'U').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase() : 'KY';
+  const nearby = STATIONS.slice(0,4).map(st=>{
+    const pr = priceFor(st.id);
+    const avl = avail(st);
+    const col = avl===0 ? 'var(--red)' : avl<=1 ? 'var(--amber)' : 'var(--green)';
     return`<div class="nc"><div class="nc-name">${st.name}</div>
-    <div class="nc-dist">${(Math.random()*3+.5).toFixed(1)} km · ★${st.rating}</div>
+    <div class="nc-dist">${st.hood} · ★${st.rating}</div>
     <div class="nc-avail" style="color:${col}">${avl===0?'Sin disponibilidad':`${avl} slot${avl!==1?'s':''} libre${avl!==1?'s':''}`}</div>
-    <div class="nc-price">${fmtPrice(pr.final)}/kWh</div></div>`;
+    <div class="nc-price">${fmtPrice(pr.final_price)}/kWh</div></div>`;
   }).join('');
-  return`<div class="ph-hero"><div><div class="ph-greet">Hola, <em>Alejandro</em> 👋</div><div class="ph-sub">Lunes · Medellín</div></div><div class="ph-avt">AL</div></div>
+  const loginHint = !u ? `<div style="background:var(--card);border:1px solid rgba(0,240,130,.2);border-radius:var(--r);padding:12px 14px;margin:12px 0;font-size:12px;color:var(--m3)">Inicia sesión para reservar y ver tu historial. <a style="color:var(--green);cursor:pointer;text-decoration:underline" onclick="openAuth('login')">Entrar →</a></div>` : '';
+  return`<div class="ph-hero"><div><div class="ph-greet">Hola, <em>${name}</em> 👋</div><div class="ph-sub">${new Date().toLocaleDateString('es-CO',{weekday:'long'})} · Medellín</div></div><div class="ph-avt">${initials}</div></div>
   <div class="ph-stats">
-    ${[['1.284','kWh mes'],['156 kg','CO₂ evitado'],['18','Sesiones']].map(s=>`<div class="ph-sc"><div class="ph-sv">${s[0]}</div><div class="ph-sl">${s[1]}</div></div>`).join('')}
+    ${[[STATIONS.length+'','Estaciones'],[STATIONS.reduce((a,s)=>a+s.slots_available,0)+'','Libres ahora'],[STATIONS.reduce((a,s)=>a+s.slots_charging,0)+'','Cargando']].map(s=>`<div class="ph-sc"><div class="ph-sv">${s[0]}</div><div class="ph-sl">${s[1]}</div></div>`).join('')}
   </div>
-  ${banner}
-  <div class="ph-sec"><span class="ph-sec-t">Cerca de ti</span><span class="ph-sec-l">Ver mapa →</span></div>
-  <div class="nearby-scroll">${nearby}</div>
+  ${loginHint}
+  <div class="ph-sec"><span class="ph-sec-t">Cerca de ti</span><span class="ph-sec-l" onclick="goTo('map-screen')">Ver mapa →</span></div>
+  <div class="nearby-scroll">${nearby || '<div class="empty-state">Sin estaciones aún</div>'}</div>
   <div class="ph-sec" style="margin-bottom:10px"><span class="ph-sec-t">Acciones</span></div>
   <div class="ph-actions">
-    ${[['🗺','Mapa'],['📅','Reservar'],['⚡','Rápido'],['💳','Billetera']].map(a=>`<div class="pa-btn"><div class="pa-icon">${a[0]}</div><div class="pa-txt">${a[1]}</div></div>`).join('')}
+    ${[['🗺','Mapa',"goTo('map-screen')"],['📅','Reservas','setPhTab(2)'],['📋','Historial','setPhTab(3)'],['👤','Perfil','setPhTab(4)']].map(a=>`<div class="pa-btn" onclick="${a[2]}"><div class="pa-icon">${a[0]}</div><div class="pa-txt">${a[1]}</div></div>`).join('')}
   </div>`;
 }
 
 function chargingScreen(){
-  const s=phSession;
-  const batColor=s.bat>70?'#00F082':s.bat>40?'#FFBE3D':'#FF6B6B';
-  const pr=calcPrice('st1');
-  return`<div class="ch-screen">
-    <div class="ch-head"><div><div class="ch-title">En carga ⚡</div><div class="ch-sub">El Tesoro · Slot #3 · CCS2</div></div>
-    <button class="stop-btn" onclick="stopCharge()">Detener</button></div>
-    <div class="bat-wrap">
-      <div class="bat-glow-el"></div>
-      <svg class="bat-svg" viewBox="0 0 155 225" fill="none">
-        <rect x="52" y="4" width="51" height="16" rx="6" fill="rgba(255,255,255,0.12)"/>
-        <rect x="6" y="20" width="143" height="198" rx="18" fill="#0D1930" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
-        <clipPath id="batClip"><rect x="10" y="24" width="135" height="190" rx="14"/></clipPath>
-        <rect x="10" y="${24+(190-190*s.bat/100)}" width="135" height="${190*s.bat/100}" rx="14" fill="${batColor}" clip-path="url(#batClip)" style="transition:all 1.5s ease"/>
-        <text x="77.5" y="128" text-anchor="middle" dominant-baseline="central" fill="#E8F4FF" font-size="34" font-weight="800" font-family="Syne,sans-serif">${Math.round(s.bat)}%</text>
-        <text x="77.5" y="158" text-anchor="middle" fill="rgba(232,244,255,0.45)" font-size="12" font-family="DM Sans,sans-serif">${s.kw} kW</text>
-      </svg>
-    </div>
-    <div class="ch-stats">
-      <div class="chs"><div class="chs-val" style="color:var(--amber)">${fmtTime(timeLeft({bat:s.bat,kw:s.kw}))}</div><div class="chs-lbl">Tiempo restante</div></div>
-      <div class="chs"><div class="chs-val" style="color:var(--blue)">${s.kw} kW</div><div class="chs-lbl">Potencia</div></div>
-      <div class="chs"><div class="chs-val" style="color:var(--green)">${s.kwh.toFixed(1)} kWh</div><div class="chs-lbl">Energía</div></div>
-      <div class="chs"><div class="chs-val" style="color:var(--purple)">${s.mins} min</div><div class="chs-lbl">Duración</div></div>
-    </div>
-    <div class="cost-ticker">
-      <div><div class="ct-lbl">Costo acumulado</div><div class="ct-sub">${fmtPrice(pr.final)}/kWh · ×${pr.mult}</div></div>
-      <div class="ct-val">${fmtPrice(s.cost)}</div>
-    </div>
-    <div class="charge-log">
-      ${[['Placa','MED·234'],['Inicio','10:22 am'],['Bat. inicial','15%'],['Objetivo','85%'],['Pago','Nequi ····3821']].map(r=>`<div class="cl-row"><span class="cl-k">${r[0]}</span><span class="cl-v">${r[1]}</span></div>`).join('')}
-    </div>
+  // La sesión en vivo del conductor requiere /sessions/start (pendientes 4-5).
+  // TODO-driver-session: integrar inicio real de sesión tras validar reserva/slot.
+  return`<div style="padding:40px 24px;text-align:center">
+    <div style="font-size:56px;margin-bottom:16px">⚡</div>
+    <div style="font-family:var(--display);font-size:18px;font-weight:800;margin-bottom:8px">Sin sesión activa</div>
+    <div style="font-size:13px;color:var(--m2);line-height:1.7;margin-bottom:22px">Reserva un slot y preséntate en la estación para iniciar la carga. Cuando el cargador la active, aparecerá aquí en tiempo real.</div>
+    <button class="nav-auth-btn" onclick="goTo('map-screen')">Ir al mapa</button>
   </div>`;
 }
 
-function stopCharge(){
-  phSession.active=false;
-  phSession.bat=Math.min(95,phSession.bat);
-  phTab=0;renderPhNav();renderPhScreen();
+async function loadMyReservations(){
+  if (!API.token()) return;
+  driverLoading = true; driverError = null; renderPhScreen();
+  try {
+    const r = await api('/api/v1/reservations/user/me', { auth: true });
+    myReservations = r.data || [];
+  } catch (e) { driverError = e.message; myReservations = []; }
+  finally { driverLoading = false; renderPhScreen(); }
+}
+
+async function cancelReservation(id){
+  if (!confirm('¿Cancelar esta reserva?')) return;
+  try {
+    const r = await api('/api/v1/reservations/'+encodeURIComponent(id), { method:'DELETE', auth:true });
+    toast(`Reserva cancelada. Reembolso: ${fmtPrice(r.refund_amount)}`, 'ok');
+    loadMyReservations(); loadStations();
+  } catch (e) { toast(e.message, 'err'); }
 }
 
 function reservationsScreen(){
+  if (!API.token()) return loginRequiredView('Inicia sesión para ver tus reservas.');
+  if (driverLoading && !myReservations) return `<div class="list-loading"><span class="loader-inline"></span>Cargando reservas…</div>`;
+  if (driverError && !myReservations) return `<div style="padding:20px"><div class="err-banner">${driverError}<button onclick="loadMyReservations()">Reintentar</button></div></div>`;
+  const list = myReservations || [];
+  const cards = list.map(r => {
+    const rf = new Date(r.reserved_for);
+    const timeTxt = isNaN(rf) ? '—' : rf.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    const dateTxt = isNaN(rf) ? '—' : rf.toLocaleDateString('es-CO',{weekday:'short',day:'2-digit',month:'2-digit'});
+    const stName = (STATIONS.find(s=>
+      SLOT_CACHE[s.id] && SLOT_CACHE[s.id].slots.some(sl=>sl.id===r.slot_id)
+    ) || {}).name || 'Estación';
+    return`<div style="background:var(--card);border:1.5px solid rgba(77,168,255,0.25);border-radius:var(--r2);padding:16px;margin-bottom:12px;position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:var(--bd);pointer-events:none"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:relative">
+        <div><div style="font-family:var(--display);font-size:14px;font-weight:700">${stName}</div><div style="font-size:11px;color:var(--m2)">Reserva #${r.id}</div></div>
+        <span class="tag tag-b">${r.status || 'active'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-around;background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 0;margin-bottom:12px;position:relative">
+        ${[[dateTxt,'Fecha'],[timeTxt,'Hora'],[`${r.window_minutes||10} min`,'Ventana'],[fmtPrice(r.deposit_amount||0),'Depósito']].map(i=>`<div style="text-align:center"><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue)">${i[0]}</div><div style="font-size:10px;color:var(--m);margin-top:2px">${i[1]}</div></div>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px;position:relative">
+        <button onclick="cancelReservation('${r.id}')" style="flex:1;padding:9px;background:transparent;border:1px solid var(--b);border-radius:var(--r);color:var(--red);font-family:var(--fn);font-size:12px;cursor:pointer">Cancelar</button>
+        <button onclick="goTo('map-screen')" style="flex:1;padding:9px;background:var(--green);border:none;border-radius:var(--r);color:#03080F;font-family:var(--display);font-size:12px;font-weight:700;cursor:pointer">Ver en mapa →</button>
+      </div>
+    </div>`;
+  }).join('');
   return`<div style="padding:20px 20px 80px">
     <div style="font-family:var(--display);font-size:20px;font-weight:800;margin-bottom:16px">Mis Reservas</div>
-    <div style="background:var(--card);border:1.5px solid rgba(77,168,255,0.25);border-radius:var(--r2);padding:16px;margin-bottom:12px;position:relative;overflow:hidden">
-      <div style="position:absolute;inset:0;background:var(--bd);pointer-events:none"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div><div style="font-family:var(--display);font-size:14px;font-weight:700">Santa Fe Medellín</div><div style="font-size:11px;color:var(--m2)">Cra 48 Nro 16 Sur-44</div></div>
-        <span class="tag tag-b">Próxima</span>
-      </div>
-      <div style="display:flex;justify-content:space-around;background:rgba(255,255,255,0.04);border-radius:10px;padding:10px 0;margin-bottom:12px">
-        ${[['Hoy','Fecha'],['15:30','Hora'],['10 min','Ventana'],['CCS2','Conector']].map(i=>`<div style="text-align:center"><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--blue)">${i[0]}</div><div style="font-size:10px;color:var(--m);margin-top:2px">${i[1]}</div></div>`).join('')}
-      </div>
-      <div style="display:flex;gap:8px">
-        <button style="flex:1;padding:9px;background:transparent;border:1px solid var(--b);border-radius:var(--r);color:var(--m2);font-family:var(--fn);font-size:12px;cursor:pointer">Cancelar</button>
-        <button style="flex:1;padding:9px;background:var(--green);border:none;border-radius:var(--r);color:#03080F;font-family:var(--display);font-size:12px;font-weight:700;cursor:pointer">Cómo llegar →</button>
-      </div>
-    </div>
-    <div style="font-size:11px;font-weight:600;color:var(--m2);text-transform:uppercase;letter-spacing:.7px;margin:16px 0 10px;font-family:var(--mono)">Historial</div>
-    ${[['El Tesoro','Ayer 14:30','Completada','var(--green)','var(--gd)'],['EPM Centro','Lun 9:00','Expirada','var(--amber)','var(--ad)'],['Oviedo','Dom 17:00','Completada','var(--green)','var(--gd)']].map(r=>`
-    <div style="background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
-      <div style="width:36px;height:36px;border-radius:8px;background:${r[4]};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">📅</div>
-      <div style="flex:1"><div style="font-size:13px;font-weight:600">${r[0]}</div><div style="font-size:11px;color:var(--m2);margin-top:2px">${r[1]}</div></div>
-      <span style="font-size:11px;font-weight:700;color:${r[2]};background:${r[4]};padding:3px 10px;border-radius:20px">${r[3]}</span>
-    </div>`).join('')}
+    ${cards || '<div class="empty-state">No tienes reservas activas. Crea una desde el mapa.</div>'}
   </div>`;
 }
 
+async function loadMyHistory(){
+  if (!API.token()) return;
+  driverLoading = true; driverError = null; renderPhScreen();
+  try {
+    const r = await api('/api/v1/sessions/history/me', { auth: true });
+    myHistory = r.data || [];
+  } catch (e) { driverError = e.message; myHistory = []; }
+  finally { driverLoading = false; renderPhScreen(); }
+}
+
 function historyScreen(){
-  const HIST=[['El Tesoro','Hoy 10:22am','CCS2',28.4,40704,34],['EPM Centro','Ayer 7:15pm','CCS2·150kW',41.2,74160,17],['Santa Fe','Lun 8:40am','Type2',19.8,18216,54],['Oviedo','Dom 6:10pm','CCS2',35.1,40365,42],['Aeropuerto','Sáb 2:30pm','Type2',22.9,27480,63]];
-  const totCost=HIST.reduce((a,s)=>a+s[4],0);const totKwh=HIST.reduce((a,s)=>a+s[2],0);
+  if (!API.token()) return loginRequiredView('Inicia sesión para ver tu historial.');
+  if (driverLoading && !myHistory) return `<div class="list-loading"><span class="loader-inline"></span>Cargando historial…</div>`;
+  if (driverError && !myHistory) return `<div style="padding:20px"><div class="err-banner">${driverError}<button onclick="loadMyHistory()">Reintentar</button></div></div>`;
+  const list = myHistory || [];
+  const totCost = list.reduce((a,s)=>a+(s.total_cost||0),0);
+  const totKwh  = list.reduce((a,s)=>a+(s.energy_kwh||0),0);
+  const rows = list.map(h => {
+    const d = h.started_at ? new Date(h.started_at) : null;
+    const dateTxt = d ? d.toLocaleString('es-CO',{weekday:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+    return`<div style="background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+      <div style="width:38px;height:38px;border-radius:10px;background:var(--gd);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">⚡</div>
+      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">Sesión ${String(h.id||'').slice(-6)}</div><div style="font-size:11px;color:var(--m2);margin-top:2px">${dateTxt} · ${h.status||'completed'}</div></div>
+      <div style="text-align:right;flex-shrink:0"><div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--green)">${fmtPrice(h.total_cost||0)}</div><div style="font-size:10px;color:var(--m2);margin-top:2px">${(h.energy_kwh||0).toFixed(1)} kWh</div></div>
+    </div>`;
+  }).join('');
   return`<div style="padding:20px 20px 80px">
     <div style="font-family:var(--display);font-size:20px;font-weight:800;margin-bottom:16px">Historial</div>
     <div style="background:var(--card);border:1px solid var(--b);border-radius:var(--r2);padding:16px;margin-bottom:16px">
-      <div style="font-size:11px;font-family:var(--mono);color:var(--m2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Mayo 2026</div>
+      <div style="font-size:11px;font-family:var(--mono);color:var(--m2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Resumen</div>
       <div style="display:flex;justify-content:space-around">
-        ${[[fmtPrice(totCost),'Total','var(--green)'],[totKwh.toFixed(0)+' kWh','Energía','var(--t)'],['18','Sesiones','var(--t)'],['156 kg','CO₂ evitado','var(--blue)']].map(s=>`<div style="text-align:center"><div style="font-family:var(--display);font-size:15px;font-weight:700;color:${s[2]}">${s[0]}</div><div style="font-size:10px;color:var(--m);margin-top:3px">${s[1]}</div></div>`).join('')}
+        ${[[fmtPrice(totCost),'Total','var(--green)'],[totKwh.toFixed(0)+' kWh','Energía','var(--t)'],[list.length+'','Sesiones','var(--t)']].map(s=>`<div style="text-align:center"><div style="font-family:var(--display);font-size:15px;font-weight:700;color:${s[2]}">${s[0]}</div><div style="font-size:10px;color:var(--m);margin-top:3px">${s[1]}</div></div>`).join('')}
       </div>
     </div>
-    ${HIST.map(h=>`<div style="background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
-      <div style="width:38px;height:38px;border-radius:10px;background:var(--gd);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">⚡</div>
-      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h[0]}</div><div style="font-size:11px;color:var(--m2);margin-top:2px">${h[1]} · ${h[2]} · ${h[5]} min</div></div>
-      <div style="text-align:right;flex-shrink:0"><div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--green)">${fmtPrice(h[4])}</div><div style="font-size:10px;color:var(--m2);margin-top:2px">${h[3]} kWh</div></div>
-    </div>`).join('')}
+    ${rows || '<div class="empty-state">Aún no tienes sesiones registradas.</div>'}
   </div>`;
 }
 
 function profileScreen(){
+  const u = API.user();
+  if (!u) return loginRequiredView('Inicia sesión para ver tu perfil.');
+  const initials = (u.name||'U').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+  const wallet = u.wallet_balance || 0;
   return`<div style="padding:20px 20px 80px">
     <div style="text-align:center;padding:10px 0 22px">
-      <div style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#00F082,#4DA8FF);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:22px;font-weight:800;color:#03080F;margin:0 auto 12px">AL</div>
-      <div style="font-family:var(--display);font-size:18px;font-weight:800">Alejandro Lopez</div>
-      <div style="font-size:12px;color:var(--m2);margin-top:3px">alejandro@rotorr.co · Medellín</div>
+      <div style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#00F082,#4DA8FF);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:22px;font-weight:800;color:#03080F;margin:0 auto 12px">${initials}</div>
+      <div style="font-family:var(--display);font-size:18px;font-weight:800">${u.name||'—'}</div>
+      <div style="font-size:12px;color:var(--m2);margin-top:3px">${u.email||''} · Medellín</div>
     </div>
     <div style="background:var(--card);border:1.5px solid rgba(0,240,130,0.2);border-radius:var(--r2);padding:18px;margin-bottom:16px;position:relative;overflow:hidden">
       <div style="position:absolute;inset:0;background:var(--gb);pointer-events:none"></div>
-      <div style="font-size:11px;font-family:var(--mono);color:var(--m2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Billetera KargaYa</div>
-      <div style="font-family:var(--display);font-size:30px;font-weight:800;color:var(--green)">$85.400</div>
-      <div style="font-size:11px;color:var(--m2);margin-top:3px">Saldo disponible</div>
-      <div style="display:flex;gap:8px;margin-top:14px">
-        ${['Recargar','Retirar','Movimientos'].map(t=>`<button style="flex:1;padding:9px;background:rgba(255,255,255,0.06);border:1px solid var(--b);border-radius:var(--r);color:var(--t);font-family:var(--fn);font-size:12px;font-weight:500;cursor:pointer">${t}</button>`).join('')}
-      </div>
+      <div style="font-size:11px;font-family:var(--mono);color:var(--m2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;position:relative">Billetera KargaYa</div>
+      <div style="font-family:var(--display);font-size:30px;font-weight:800;color:var(--green);position:relative">${fmtPrice(wallet)}</div>
+      <div style="font-size:11px;color:var(--m2);margin-top:3px;position:relative">Saldo disponible</div>
     </div>
-    <div style="background:var(--card);border:1px solid var(--b);border-radius:var(--r2);overflow:hidden">
-      ${[['🚗','var(--gd)','Mi vehículo','BYD Atto 3 · MED-234'],['💳','var(--bd)','Métodos de pago','Nequi + Visa ····3821'],['🔔','var(--ad)','Notificaciones','Activadas'],['🌿','var(--gd)','Impacto ambiental','156 kg CO₂ evitados'],['⚙️','var(--b3)','Configuración','']].map(r=>`<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--b);cursor:pointer">
-        <div style="width:34px;height:34px;border-radius:10px;background:${r[1]};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${r[0]}</div>
-        <div style="flex:1;font-size:13px;font-weight:600">${r[2]}</div>
-        <div style="font-size:11px;color:var(--m2)">${r[3]}</div>
-        <div style="color:var(--m)">›</div>
-      </div>`).join('')}
-    </div>
-    <div style="background:var(--card2);border:1px solid var(--b);border-radius:var(--r);padding:14px;margin-top:14px;display:flex;align-items:center;gap:12px">
-      <div style="font-size:28px">🌿</div>
-      <div style="font-size:12px;color:var(--m2);line-height:1.7">Al cargar con KargaYa has evitado <strong style="color:var(--green)">156 kg de CO₂</strong> este mes. Equivale a plantar <strong style="color:var(--green)">7 árboles</strong>.</div>
-    </div>
+    <button class="nav-auth-btn secondary" style="width:100%;padding:12px" onclick="logout()">Cerrar sesión</button>
   </div>`;
 }
 
-// ══ LIVE SIMULATION ═══════════════════════════════════════
-setInterval(()=>{
-  STATIONS.forEach(st=>{
-    st.slots.forEach(slot=>{
-      if(slot.s==='charging'&&slot.bat!=null){
-        const inc=slot.kw>=100?2.2:slot.kw>=50?1.4:.8;
-        slot.bat=Math.min(95,slot.bat+inc*(0.8+Math.random()*.4));
-        if(slot.bat>=95){slot.s='available';slot.bat=null;slot.mins=null;}
-        else slot.mins=(slot.mins||0)+1;
-      }
-    });
-    const ch=st.slots.filter(s=>['charging','reserved'].includes(s.s)).length;
-    st.occ=ch/st.slots.length;
-  });
-  // Update UI if visible
-  if(document.getElementById('map-screen').classList.contains('active')&&selStation){
-    const st=STATIONS.find(s=>s.id===selStation);
-    if(st)renderDetailPanel(st);
-    updatePriceOverlay();
-  }
-  if(document.getElementById('op-screen').classList.contains('active')){
-    renderSessionsLive();
-    const avgOcc=Math.round(STATIONS.reduce((a,s)=>a+s.occ,0)/STATIONS.length*100);
-    const kocc=document.getElementById('kpi-occ');if(kocc)kocc.textContent=avgOcc+'%';
-  }
-  if(document.getElementById('driver-screen').classList.contains('active')&&phTab===1&&phSession.active){
-    phSession.bat=Math.min(95,phSession.bat+1.1);
-    phSession.kwh+=50/3600*5;
-    phSession.cost=Math.round(phSession.kwh*1440);
-    phSession.mins+=1;
-    if(phSession.bat>=95){phSession.active=false;}
-    renderPhScreen();
-  }
-},5000);
+function loginRequiredView(msg){
+  return`<div style="padding:40px 24px;text-align:center">
+    <div style="font-size:56px;margin-bottom:16px">🔒</div>
+    <div style="font-family:var(--display);font-size:18px;font-weight:800;margin-bottom:8px">Requiere iniciar sesión</div>
+    <div style="font-size:13px;color:var(--m2);line-height:1.7;margin-bottom:22px">${msg}</div>
+    <button class="nav-auth-btn" onclick="openAuth('login')">Entrar</button>
+  </div>`;
+}
 
-// Initial render
+// ══ BOOTSTRAP ═════════════════════════════════════════════
+setInterval(() => {
+  // Refresca lista de estaciones cada 30s (como fallback si WS no empuja).
+  if (document.visibilityState === 'visible') loadStations();
+}, 30000);
+
+tryRestoreSession();
+updateAuthUI();
+loadStations();
+wsConnect();
 renderMap();
 </script>
 </body>
