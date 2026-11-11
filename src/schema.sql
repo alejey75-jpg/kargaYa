@@ -1,5 +1,5 @@
 -- ============================================================
--- VOLTIA — Schema PostgreSQL completo
+-- KargaYa — Schema PostgreSQL completo
 -- Motor: PostgreSQL 15+  |  Charset: UTF-8
 -- ============================================================
 

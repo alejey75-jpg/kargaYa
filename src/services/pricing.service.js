@@ -1,4 +1,4 @@
-// services/pricing.service.js — Motor de precios dinámicos VOLTIA
+// services/pricing.service.js — Motor de precios dinámicos KargaYa
 const { PRICING_RULES, STATIONS, getStationOccupancy } = require('../db/memory');
 
 /**
